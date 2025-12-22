@@ -1,0 +1,20 @@
+{
+	"name": "@corelauncher/rod",
+	"module": "index.ts",
+	"type": "module",
+	"private": true,
+	"devDependencies": {
+		"@biomejs/biome": "2.3.10",
+		"@types/bun": "latest",
+		"husky": "^9.1.7",
+		"typescript": "^5",
+		"knip": "^5.76.3"
+	},
+	"dependencies": {},
+	"scripts": {
+		"prepare": "husky",
+		"dev": "bun run --watch ./src-ts/index.ts",
+		"lint": "bun run biome check --fix",
+		"knip": "bun run knip-bun"
+	}
+}
