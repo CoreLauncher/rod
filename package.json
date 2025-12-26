@@ -1,22 +1,49 @@
 {
 	"name": "@corelauncher/rod",
-	"module": "index.ts",
+	"version": "1.0.0",
+	"description": "Webview for bun based on tauri's tao and wry.",
+
+	"keywords": [
+		"corelauncher",
+		"webview",
+		"bun",
+		"tauri",
+		"tao",
+		"wry"
+	],
+
+	"homepage": "https://github.com/CoreLauncher/rod#readme",
+	"bugs": {
+		"url": "https://github.com/CoreLauncher/rod/issues"
+	},
+	"license": "MIT",
+	"author": "CoreByte",
+
+	"files": [
+		"/src-ts/*",
+		"/target/release/rod.dll"
+	],
+
 	"type": "module",
-	"private": true,
+	"main": "/src-ts/index.ts",
+	"module": "/src-ts/index.ts",
+
+	"scripts": {
+		"prepare": "husky",
+		"prepublish": "cargo build --release",
+		"dev": "bun run --watch ./src-playground/index.ts",
+		"lint": "bun run biome check --fix",
+		"knip": "bun run knip-bun"
+	},
+
+	"dependencies": {
+		"tiny-typed-emitter": "^2.1.0"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.10",
 		"@types/bun": "latest",
 		"husky": "^9.1.7",
 		"typescript": "^5",
 		"knip": "^5.76.3"
-	},
-	"dependencies": {
-		"tiny-typed-emitter": "^2.1.0"
-	},
-	"scripts": {
-		"prepare": "husky",
-		"dev": "bun run --watch ./src-playground/index.ts",
-		"lint": "bun run biome check --fix",
-		"knip": "bun run knip-bun"
 	}
 }
