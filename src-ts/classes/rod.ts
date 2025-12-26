@@ -41,7 +41,7 @@ export default class Rod {
 	}
 
 	private retrieveWebViewById(id: number) {
-		return this.webviews.find((webview) => webview["id"] === id);
+		return this.webviews.find((webview) => webview.id === id);
 	}
 
 	createWebView(options: WebViewOptions & WindowOptions = {}) {
