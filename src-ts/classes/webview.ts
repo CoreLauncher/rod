@@ -11,7 +11,6 @@ import {
 	rod_webview_set_html,
 	rod_webview_set_url,
 	rod_webview_zoom,
-	rod_window_destroy,
 } from "../ffi";
 import type { WebViewOptions, WindowOptions } from "../types";
 import { transformWebViewOptions } from "../utilities/options";
