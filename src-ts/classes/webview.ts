@@ -21,8 +21,12 @@ import Window from "./window";
 
 export default class WebView extends Window {
 	protected webviewPtr: Pointer;
-	constructor(eventLoop: EventLoop, options: WebViewOptions & WindowOptions) {
-		super(eventLoop.eventloopPtr, options);
+	constructor(
+		eventLoop: EventLoop,
+		id: number,
+		options: WebViewOptions & WindowOptions,
+	) {
+		super(eventLoop.eventloopPtr, id, options);
 
 		const webviewPtr = rod_webview_create(
 			this.windowPtr,
@@ -70,13 +74,11 @@ export default class WebView extends Window {
 	}
 
 	override destroy() {
-		if (this.webviewPtr) {
-			rod_webview_destroy(this.webviewPtr);
-			this.webviewPtr = null as unknown as Pointer;
-		}
-		if (this.windowPtr) {
-			rod_window_destroy(this.windowPtr);
-			this.windowPtr = null as unknown as Pointer;
-		}
+		if (!this.webviewPtr) return;
+
+		rod_webview_destroy(this.webviewPtr);
+		this.webviewPtr = null as unknown as Pointer;
+
+		super.destroy();
 	}
 }

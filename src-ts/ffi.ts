@@ -94,7 +94,7 @@ const {
 
 	// window
 	rod_window_create: {
-		args: [FFIType.ptr, FFIType.cstring],
+		args: [FFIType.ptr, FFIType.u16, FFIType.cstring],
 		returns: FFIType.ptr,
 	},
 	rod_window_destroy: {

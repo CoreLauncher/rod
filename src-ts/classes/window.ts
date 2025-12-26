@@ -1,4 +1,5 @@
 import type { Pointer } from "bun:ffi";
+import { TypedEmitter } from "tiny-typed-emitter";
 import {
 	rod_window_create,
 	rod_window_destroy,
@@ -43,11 +44,25 @@ import type { Position, ProgressState, Size, WindowOptions } from "../types";
 import { transformWindowOptions } from "../utilities/options";
 import { encodeString } from "../utilities/strings";
 
-export default class Window {
+interface WindowEvents {
+	close_requested: () => void;
+	focused: (focused: boolean) => void;
+	moved: (position: Position) => void;
+	resized: (size: Size) => void;
+	destroyed: () => void;
+}
+
+export default class Window extends TypedEmitter<WindowEvents> {
+	id: number;
 	protected windowPtr: Pointer;
-	constructor(eventLoop: Pointer, options: WindowOptions) {
+	constructor(eventLoop: Pointer, id: number, options: WindowOptions) {
+		super();
+
+		this.id = id;
+
 		const windowPtr = rod_window_create(
 			eventLoop,
+			id,
 			encodeString(JSON.stringify(transformWindowOptions(options))),
 		);
 		if (!windowPtr) throw new Error("Failed to create Window");
@@ -214,9 +229,11 @@ export default class Window {
 	}
 
 	destroy() {
-		if (this.windowPtr) {
-			rod_window_destroy(this.windowPtr);
-			this.windowPtr = null as unknown as Pointer;
-		}
+		if (!this.windowPtr) return;
+
+		this.emit("destroyed");
+
+		rod_window_destroy(this.windowPtr);
+		this.windowPtr = null as unknown as Pointer;
 	}
 }

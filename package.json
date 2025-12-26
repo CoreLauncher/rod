@@ -10,7 +10,9 @@
 		"typescript": "^5",
 		"knip": "^5.76.3"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"tiny-typed-emitter": "^2.1.0"
+	},
 	"scripts": {
 		"prepare": "husky",
 		"dev": "bun run --watch ./src-playground/index.ts",

@@ -1,8 +1,11 @@
 use serde_json::{Value, json};
+use std::collections::HashMap;
 use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::c_char;
 use std::ffi::c_void;
+use std::sync::LazyLock;
+use std::sync::Mutex;
 use tao::dpi::LogicalPosition;
 use tao::dpi::LogicalSize;
 use tao::dpi::PhysicalPosition;
@@ -14,8 +17,29 @@ use tao::window::Fullscreen::Borderless;
 use tao::window::ProgressBarState;
 use tao::window::ProgressState;
 use tao::window::WindowBuilder;
+use tao::window::WindowId;
 use tao::{platform::run_return::EventLoopExtRunReturn, window::Window};
 use wry::WebViewBuilder;
+
+static WINDOW_ID_MAP: LazyLock<Mutex<HashMap<WindowId, u16>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
+//#region Window ID map management
+pub fn insert_window_id(window_id: WindowId, custom_id: u16) {
+    let mut map = WINDOW_ID_MAP.lock().unwrap();
+    map.insert(window_id, custom_id);
+}
+
+pub fn remove_window_id(window_id: &WindowId) {
+    let mut map = WINDOW_ID_MAP.lock().unwrap();
+    map.remove(window_id);
+}
+
+pub fn get_custom_window_id(window_id: &WindowId) -> Option<u16> {
+    let map = WINDOW_ID_MAP.lock().unwrap();
+    map.get(window_id).copied()
+}
+//#endregion
 
 //#region Pointer conversions
 fn string_from_ptr(string_ptr: *mut c_void) -> String {
@@ -62,10 +86,6 @@ pub extern "C" fn rod_event_loop_create() -> *mut c_void {
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_event_loop_destroy(event_loop_ptr: *mut c_void) {
-    if event_loop_ptr.is_null() {
-        return;
-    }
-    // Reconstruct the Box to drop the EventLoop
     unsafe {
         drop(Box::from_raw(event_loop_ptr as *mut EventLoop<()>));
     }
@@ -94,43 +114,69 @@ pub unsafe extern "C" fn rod_event_loop_poll(
 
         match &event {
             Event::WindowEvent {
+                window_id,
                 event: WindowEvent::CloseRequested,
                 ..
             } => {
-                call_callback(callback, "window_close_requested", &json!({}));
+                let custom_id = get_custom_window_id(window_id);
+                call_callback(
+                    callback,
+                    "window_close_requested",
+                    &json!({ "id": custom_id }),
+                );
             }
+
             Event::WindowEvent {
+                window_id,
                 event: WindowEvent::Focused(state),
                 ..
             } => {
-                call_callback(callback, "window_focused", &json!(state));
+                let custom_id = get_custom_window_id(window_id);
+                call_callback(
+                    callback,
+                    "window_focused",
+                    &json!({
+                        "id": custom_id,
+                        "focused": state
+                    }),
+                );
             }
+
             Event::WindowEvent {
+                window_id,
                 event: WindowEvent::Moved(position),
                 ..
             } => {
+                let custom_id = get_custom_window_id(window_id);
+
                 call_callback(
                     callback,
                     "window_moved",
                     &json!({
+                        "id": custom_id,
                         "x": position.x,
                         "y": position.y
                     }),
                 );
             }
+
             Event::WindowEvent {
+                window_id,
                 event: WindowEvent::Resized(size),
                 ..
             } => {
+                let custom_id = get_custom_window_id(window_id);
                 call_callback(
                     callback,
                     "window_resized",
                     &json!({
+                        "id": custom_id,
                         "width": size.width,
                         "height": size.height
                     }),
                 );
             }
+
             Event::MainEventsCleared => {
                 *control_flow = ControlFlow::Exit;
             }
@@ -142,6 +188,7 @@ pub unsafe extern "C" fn rod_event_loop_poll(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_window_create(
     event_loop_ptr: *mut c_void,
+    window_id: u16,
     options_str_ptr: *mut c_void,
 ) -> *mut c_void {
     let event_loop = event_loop_from_ptr(event_loop_ptr);
@@ -244,14 +291,22 @@ pub unsafe extern "C" fn rod_window_create(
     }
 
     let window = builder.build(event_loop).unwrap();
+
+    // Store mapping from tao WindowId -> user-provided id
+    let tao_id = window.id();
+    {
+        let mut map = WINDOW_ID_MAP.lock().unwrap();
+        map.insert(tao_id, window_id);
+    }
+
     return window_to_ptr(window);
 }
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_window_destroy(window_ptr: *mut c_void) {
-    if window_ptr.is_null() {
-        return;
-    }
+    let window = window_from_ptr(window_ptr);
+    remove_window_id(&window.id());
+
     unsafe {
         drop(Box::from_raw(window_ptr as *mut Window));
     }
@@ -275,7 +330,7 @@ pub unsafe extern "C" fn rod_window_get_size(window_ptr: *mut c_void) -> *const 
 pub unsafe extern "C" fn rod_window_get_position(window_ptr: *mut c_void) -> *const c_char {
     let window = window_from_ptr(window_ptr);
     let position = window.outer_position().unwrap();
-    return string_to_ptr(&json!({"x": position.y, "y": position.y}).to_string()).into_raw();
+    return string_to_ptr(&json!({"x": position.x, "y": position.y}).to_string()).into_raw();
 }
 
 #[unsafe(no_mangle)]
@@ -607,9 +662,6 @@ pub unsafe extern "C" fn rod_webview_create(
 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_webview_destroy(webview_ptr: *mut c_void) {
-    if webview_ptr.is_null() {
-        return;
-    }
     unsafe {
         drop(Box::from_raw(webview_ptr as *mut wry::WebView));
     }
