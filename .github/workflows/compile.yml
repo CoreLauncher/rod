@@ -22,7 +22,7 @@ jobs:
               run: cargo build --verbose
 
             - name: Upload artifact
-              uses: actions/upload-artifact@v7
+              uses: actions/upload-artifact@v6
               with:
                   name: rod-library-debug
                   path: target/debug/rod.dll
