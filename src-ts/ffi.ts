@@ -8,6 +8,8 @@ const {
 		// event loop
 		rod_event_loop_create,
 		rod_event_loop_destroy,
+
+		// event loop actions
 		rod_event_loop_poll,
 
 		// window
@@ -56,14 +58,20 @@ const {
 		// webview
 		rod_webview_create,
 		rod_webview_destroy,
-		rod_webview_set_url,
+
+		// webview getters
 		rod_webview_get_url,
+		rod_webview_is_devtools_open,
+
+		// webview setters
+		rod_webview_set_url,
+		rod_webview_set_html,
+		rod_webview_zoom,
+
+		// webview actions
 		rod_webview_open_devtools,
 		rod_webview_close_devtools,
-		rod_webview_is_devtools_open,
-		rod_webview_zoom,
 		rod_webview_reload,
-		rod_webview_set_html,
 		rod_webview_clear_all_browsing_data,
 	},
 } = dlopen(path, {
@@ -286,6 +294,7 @@ export {
 	// event loop
 	rod_event_loop_create,
 	rod_event_loop_destroy,
+	// event loop actions
 	rod_event_loop_poll,
 	// window
 	rod_window_create,
@@ -330,13 +339,16 @@ export {
 	// webview
 	rod_webview_create,
 	rod_webview_destroy,
-	rod_webview_set_url,
+	// webview getters
 	rod_webview_get_url,
+	rod_webview_is_devtools_open,
+	// webview setters
+	rod_webview_set_url,
+	rod_webview_set_html,
+	rod_webview_zoom,
+	// webview actions
 	rod_webview_open_devtools,
 	rod_webview_close_devtools,
-	rod_webview_is_devtools_open,
-	rod_webview_zoom,
 	rod_webview_reload,
-	rod_webview_set_html,
 	rod_webview_clear_all_browsing_data,
 };
