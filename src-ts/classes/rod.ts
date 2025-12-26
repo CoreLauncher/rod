@@ -47,6 +47,11 @@ export default class Rod {
 	createWebView(options: WebViewOptions & WindowOptions = {}) {
 		const id = this.generateId();
 		const webview = new WebView(this.eventLoop, id, options);
+
+		webview.on("destroyed", () => {
+			this.webviews = this.webviews.filter((wv) => wv.id !== webview.id);
+		});
+
 		return webview;
 	}
 }
