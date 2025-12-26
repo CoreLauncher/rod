@@ -67,7 +67,7 @@ pub unsafe extern "C" fn rod_event_loop_destroy(event_loop_ptr: *mut c_void) {
     }
     // Reconstruct the Box to drop the EventLoop
     unsafe {
-        Box::from_raw(event_loop_ptr as *mut EventLoop<()>);
+        drop(Box::from_raw(event_loop_ptr as *mut EventLoop<()>));
     }
 }
 
@@ -253,7 +253,7 @@ pub unsafe extern "C" fn rod_window_destroy(window_ptr: *mut c_void) {
         return;
     }
     unsafe {
-        Box::from_raw(window_ptr as *mut Window);
+        drop(Box::from_raw(window_ptr as *mut Window));
     }
 }
 
@@ -605,7 +605,7 @@ pub unsafe extern "C" fn rod_webview_destroy(webview_ptr: *mut c_void) {
         return;
     }
     unsafe {
-        Box::from_raw(webview_ptr as *mut wry::WebView);
+        drop(Box::from_raw(webview_ptr as *mut wry::WebView));
     }
 }
 
