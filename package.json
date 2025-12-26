@@ -13,7 +13,7 @@
 	"dependencies": {},
 	"scripts": {
 		"prepare": "husky",
-		"dev": "bun run --watch ./src-ts/index.ts",
+		"dev": "bun run --watch ./src-playground/index.ts",
 		"lint": "bun run biome check --fix",
 		"knip": "bun run knip-bun"
 	}

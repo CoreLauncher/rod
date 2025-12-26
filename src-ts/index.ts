@@ -1,5 +1,2 @@
-import { rod_test } from "./ffi";
-
-console.log("Hello via Bun!");
-
-rod_test();
+import Rod from "./classes/rod";
+export default Rod;
