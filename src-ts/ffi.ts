@@ -55,6 +55,9 @@ const {
 		rod_window_set_visible,
 		rod_window_set_visible_on_all_workspaces,
 
+		// window actions
+		rod_window_start_drag,
+
 		// webview
 		rod_webview_create,
 		rod_webview_destroy,
@@ -243,6 +246,12 @@ const {
 		returns: FFIType.void,
 	},
 
+	// window actions
+	rod_window_start_drag: {
+		args: [FFIType.ptr],
+		returns: FFIType.void,
+	},
+
 	// webview
 	rod_webview_create: {
 		args: [FFIType.ptr, FFIType.cstring],
@@ -336,6 +345,8 @@ export {
 	rod_window_set_title,
 	rod_window_set_visible,
 	rod_window_set_visible_on_all_workspaces,
+	// window actions
+	rod_window_start_drag,
 	// webview
 	rod_webview_create,
 	rod_webview_destroy,

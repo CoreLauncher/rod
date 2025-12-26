@@ -551,6 +551,12 @@ pub unsafe extern "C" fn rod_window_set_visible_on_all_workspaces(
 }
 
 #[unsafe(no_mangle)]
+pub unsafe extern "C" fn rod_window_start_drag(window_ptr: *mut c_void) {
+    let window = window_from_ptr(window_ptr);
+    window.drag_window().unwrap();
+}
+
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_webview_create(
     window_ptr: *mut c_void,
     options_str_ptr: *mut c_void,

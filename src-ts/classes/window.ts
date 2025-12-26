@@ -37,6 +37,7 @@ import {
 	rod_window_set_title,
 	rod_window_set_visible,
 	rod_window_set_visible_on_all_workspaces,
+	rod_window_start_drag,
 } from "../ffi";
 import type { Position, ProgressState, Size, WindowOptions } from "../types";
 import { transformWindowOptions } from "../utilities/options";
@@ -206,6 +207,10 @@ export default class Window {
 
 	setVisibleOnAllWorkspaces(visible: boolean) {
 		rod_window_set_visible_on_all_workspaces(this.windowPtr, visible);
+	}
+
+	startDrag() {
+		rod_window_start_drag(this.windowPtr);
 	}
 
 	destroy() {
