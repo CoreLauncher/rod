@@ -30,9 +30,24 @@ export default class EventLoop extends TypedEmitter<EventLoopEvents> {
 			(eventPtr: Pointer, rawDataPtr: Pointer) => {
 				const event = new CString(eventPtr).toString();
 				const rawData = new CString(rawDataPtr).toString();
-				console.log(event, rawData);
 				const data = JSON.parse(rawData);
-				console.log("EventLoop Event:", event, data);
+
+				switch (event) {
+					case "window_close_requested":
+						return this.emit("window_close_requested", data.id);
+					case "window_focused":
+						return this.emit("window_focused", data.id, data.focused);
+					case "window_moved":
+						return this.emit("window_moved", data.id, {
+							x: data.x,
+							y: data.y,
+						});
+					case "window_resized":
+						return this.emit("window_resized", data.id, {
+							width: data.width,
+							height: data.height,
+						});
+				}
 			},
 			{
 				args: [FFIType.cstring, FFIType.cstring],
