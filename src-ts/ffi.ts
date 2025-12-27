@@ -1,13 +1,14 @@
-import { dlopen, FFIType, suffix } from "bun:ffi";
-import { isPackaged } from "./utilities/npm";
+import { dlopen, FFIType } from "bun:ffi";
+import { join } from "node:path";
 
 let library: { default: string };
-if (isPackaged()) {
-	library = await import(`../target/release/rod.${suffix}`);
+if (process.env.WEBVIEW_PATH) {
+	library = { default: join(".", process.env.WEBVIEW_PATH) };
+} else if (process.platform === "win32") {
+	library = await import("../target/release/rod.dll");
 } else {
-	library = await import(`../target/debug/rod.${suffix}`);
+	throw new Error("Unsupported platform");
 }
-// const path = join(import.meta.dir, "..", "target", "debug", `rod.${suffix}`);
 
 const {
 	symbols: {
