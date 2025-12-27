@@ -1,6 +1,6 @@
 {
 	"name": "@corelauncher/rod",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Webview for bun based on tauri's tao and wry.",
 
 	"keywords": [
@@ -20,6 +20,8 @@
 	"author": "CoreByte",
 
 	"files": [
+		"LICENSE",
+		"README.md",
 		"/src-ts/*",
 		"/target/release/rod.dll"
 	],

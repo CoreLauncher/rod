@@ -1,7 +1,13 @@
 import { dlopen, FFIType, suffix } from "bun:ffi";
-import { join } from "node:path";
+import { isPackaged } from "./utilities/npm";
 
-const path = join(import.meta.dir, "..", "target", "debug", `rod.${suffix}`);
+let library: { default: string };
+if (isPackaged()) {
+	library = await import(`../target/release/rod.${suffix}`);
+} else {
+	library = await import(`../target/debug/rod.${suffix}`);
+}
+// const path = join(import.meta.dir, "..", "target", "debug", `rod.${suffix}`);
 
 const {
 	symbols: {
@@ -77,7 +83,7 @@ const {
 		rod_webview_reload,
 		rod_webview_clear_all_browsing_data,
 	},
-} = dlopen(path, {
+} = dlopen(library.default, {
 	// event loop
 	rod_event_loop_create: {
 		args: [],
