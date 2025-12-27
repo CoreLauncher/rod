@@ -1,6 +1,6 @@
 {
 	"name": "@corelauncher/rod",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Webview for bun based on tauri's tao and wry.",
 
 	"keywords": [
