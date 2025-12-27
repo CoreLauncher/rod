@@ -1,6 +1,6 @@
 {
 	"name": "@corelauncher/rod",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Webview for bun based on tauri's tao and wry.",
 
 	"keywords": [
@@ -27,8 +27,8 @@
 	],
 
 	"type": "module",
-	"main": "/src-ts/index.ts",
-	"module": "/src-ts/index.ts",
+	"main": "./src-ts/index.ts",
+	"module": "./src-ts/index.ts",
 
 	"scripts": {
 		"postinstall": "husky",
