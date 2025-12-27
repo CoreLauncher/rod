@@ -7,6 +7,7 @@ export type WebViewOptions = {
 	html?: string;
 	url?: string;
 	incognito?: boolean;
+	dataDirectory?: string;
 };
 
 export type WindowOptions = {

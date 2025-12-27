@@ -16,9 +16,11 @@ import type { WebViewOptions, WindowOptions } from "../types";
 import { transformWebViewOptions } from "../utilities/options";
 import { encodeString } from "../utilities/strings";
 import type EventLoop from "./eventloop";
+import WebContext from "./webcontext";
 import Window from "./window";
 
 export default class WebView extends Window {
+	private webcontext: WebContext;
 	protected webviewPtr: Pointer;
 	constructor(
 		eventLoop: EventLoop,
@@ -27,8 +29,11 @@ export default class WebView extends Window {
 	) {
 		super(eventLoop.eventloopPtr, id, options);
 
+		this.webcontext = new WebContext(options.dataDirectory || "./rod_data");
+
 		const webviewPtr = rod_webview_create(
 			this.windowPtr,
+			this.webcontext.ptr,
 			encodeString(JSON.stringify(transformWebViewOptions(options))),
 		);
 		if (!webviewPtr) throw new Error("Failed to create WebView");
@@ -78,6 +83,7 @@ export default class WebView extends Window {
 		rod_webview_destroy(this.webviewPtr);
 		this.webviewPtr = null as unknown as Pointer;
 
+		this.webcontext.destroy();
 		super.destroy();
 	}
 }

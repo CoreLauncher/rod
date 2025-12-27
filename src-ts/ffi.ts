@@ -65,6 +65,10 @@ const {
 		// window actions
 		rod_window_start_drag,
 
+		// webcontext
+		rod_webcontext_create,
+		rod_webcontext_destroy,
+
 		// webview
 		rod_webview_create,
 		rod_webview_destroy,
@@ -259,9 +263,19 @@ const {
 		returns: FFIType.void,
 	},
 
+	// webcontext
+	rod_webcontext_create: {
+		args: [FFIType.ptr, FFIType.cstring],
+		returns: FFIType.ptr,
+	},
+	rod_webcontext_destroy: {
+		args: [FFIType.ptr],
+		returns: FFIType.void,
+	},
+
 	// webview
 	rod_webview_create: {
-		args: [FFIType.ptr, FFIType.cstring],
+		args: [FFIType.ptr, FFIType.ptr, FFIType.cstring],
 		returns: FFIType.ptr,
 	},
 	rod_webview_destroy: {
@@ -354,6 +368,9 @@ export {
 	rod_window_set_visible_on_all_workspaces,
 	// window actions
 	rod_window_start_drag,
+	// webcontext
+	rod_webcontext_create,
+	rod_webcontext_destroy,
 	// webview
 	rod_webview_create,
 	rod_webview_destroy,

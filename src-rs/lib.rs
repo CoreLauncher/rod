@@ -4,6 +4,7 @@ use std::ffi::CStr;
 use std::ffi::CString;
 use std::ffi::c_char;
 use std::ffi::c_void;
+use std::path::PathBuf;
 use std::sync::LazyLock;
 use std::sync::Mutex;
 use tao::dpi::LogicalPosition;
@@ -19,6 +20,7 @@ use tao::window::ProgressState;
 use tao::window::WindowBuilder;
 use tao::window::WindowId;
 use tao::{platform::run_return::EventLoopExtRunReturn, window::Window};
+use wry::WebContext;
 use wry::WebViewBuilder;
 
 static WINDOW_ID_MAP: LazyLock<Mutex<HashMap<WindowId, u16>>> =
@@ -67,6 +69,14 @@ fn window_from_ptr(window_ptr: *mut c_void) -> &'static mut Window {
 
 fn window_to_ptr(window: Window) -> *mut c_void {
     Box::into_raw(Box::new(window)) as *mut c_void
+}
+
+fn webcontext_from_ptr(webcontext_ptr: *mut c_void) -> &'static mut WebContext {
+    unsafe { &mut *(webcontext_ptr as *mut WebContext) }
+}
+
+fn webcontext_to_ptr(webcontext: WebContext) -> *mut c_void {
+    Box::into_raw(Box::new(webcontext)) as *mut c_void
 }
 
 fn webview_from_ptr(webview_ptr: *mut c_void) -> &'static mut wry::WebView {
@@ -612,15 +622,32 @@ pub unsafe extern "C" fn rod_window_start_drag(window_ptr: *mut c_void) {
 }
 
 #[unsafe(no_mangle)]
+pub extern "C" fn rod_webcontext_create(path_str_ptr: *mut c_void) -> *mut c_void {
+    let path_str = string_from_ptr(path_str_ptr);
+    let path = PathBuf::from(path_str);
+    let webcontext = WebContext::new(Some(path));
+    return webcontext_to_ptr(webcontext);
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rod_webcontext_destroy(webcontext_ptr: *mut c_void) {
+    unsafe {
+        drop(Box::from_raw(webcontext_ptr as *mut WebContext));
+    }
+}
+
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_webview_create(
     window_ptr: *mut c_void,
+    webcontext_ptr: *mut c_void,
     options_str_ptr: *mut c_void,
 ) -> *mut c_void {
     let window = window_from_ptr(window_ptr);
+    let webcontext = webcontext_from_ptr(webcontext_ptr);
     let options_str = string_from_ptr(options_str_ptr);
     let options: Value = serde_json::from_str(&options_str).unwrap();
 
-    let mut builder = WebViewBuilder::new();
+    let mut builder = WebViewBuilder::new_with_web_context(webcontext);
 
     if options["autoplay"].is_boolean() {
         builder = builder.with_autoplay(options["autoplay"].as_bool().unwrap());
