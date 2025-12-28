@@ -1,4 +1,5 @@
-import type { WebViewOptions, WindowOptions } from "../types";
+import { resolve } from "node:path";
+import type { TrayOptions, WebViewOptions, WindowOptions } from "../types";
 
 export function transformWebViewOptions(options: WebViewOptions) {
 	return {
@@ -35,5 +36,13 @@ export function transformWindowOptions(options: WindowOptions) {
 		transparent: options.transparent,
 		visible: options.visible,
 		visible_on_all_workspaces: options.visibleOnAllWorkspaces,
+	};
+}
+
+export function transformTrayOptions(options: TrayOptions) {
+	return {
+		icon_path: options.iconPath ? resolve(options.iconPath) : undefined,
+		tooltip: options.tooltip,
+		title: options.title,
 	};
 }

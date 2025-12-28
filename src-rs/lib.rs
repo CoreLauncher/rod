@@ -20,11 +20,21 @@ use tao::window::ProgressState;
 use tao::window::WindowBuilder;
 use tao::window::WindowId;
 use tao::{platform::run_return::EventLoopExtRunReturn, window::Window};
+use tray_icon::MouseButtonState;
+use tray_icon::TrayIcon;
+use tray_icon::TrayIconBuilder;
+use tray_icon::TrayIconEvent;
+use tray_icon::menu::Menu;
 use wry::WebContext;
+use wry::WebView;
 use wry::WebViewBuilder;
 
 static WINDOW_ID_MAP: LazyLock<Mutex<HashMap<WindowId, u16>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+
+enum CustomEvent {
+    TrayIconEvent(tray_icon::TrayIconEvent),
+}
 
 //#region Window ID map management
 pub fn insert_window_id(window_id: WindowId, custom_id: u16) {
@@ -40,6 +50,20 @@ pub fn remove_window_id(window_id: &WindowId) {
 pub fn get_custom_window_id(window_id: &WindowId) -> Option<u16> {
     let map = WINDOW_ID_MAP.lock().unwrap();
     map.get(window_id).copied()
+}
+//#endregion
+
+//#region icons
+fn load_tray_icon(path: &std::path::Path) -> tray_icon::Icon {
+    let (icon_rgba, icon_width, icon_height) = {
+        let image = image::open(path)
+            .expect("Failed to open icon path")
+            .into_rgba8();
+        let (width, height) = image.dimensions();
+        let rgba = image.into_raw();
+        (rgba, width, height)
+    };
+    tray_icon::Icon::from_rgba(icon_rgba, icon_width, icon_height).expect("Failed to open icon")
 }
 //#endregion
 
@@ -59,7 +83,7 @@ fn event_loop_from_ptr(event_loop_ptr: *mut c_void) -> &'static mut EventLoop<()
     unsafe { &mut *(event_loop_ptr as *mut EventLoop<()>) }
 }
 
-fn event_loop_to_ptr(event_loop: EventLoop<()>) -> *mut c_void {
+fn event_loop_to_ptr(event_loop: EventLoop<CustomEvent>) -> *mut c_void {
     Box::into_raw(Box::new(event_loop)) as *mut c_void
 }
 
@@ -79,18 +103,32 @@ fn webcontext_to_ptr(webcontext: WebContext) -> *mut c_void {
     Box::into_raw(Box::new(webcontext)) as *mut c_void
 }
 
-fn webview_from_ptr(webview_ptr: *mut c_void) -> &'static mut wry::WebView {
-    unsafe { &mut *(webview_ptr as *mut wry::WebView) }
+fn webview_from_ptr(webview_ptr: *mut c_void) -> &'static mut WebView {
+    unsafe { &mut *(webview_ptr as *mut WebView) }
 }
 
-fn webview_to_ptr(webview: wry::WebView) -> *mut c_void {
+fn webview_to_ptr(webview: WebView) -> *mut c_void {
     Box::into_raw(Box::new(webview)) as *mut c_void
+}
+
+fn tray_from_ptr(tray_ptr: *mut c_void) -> &'static mut TrayIcon {
+    unsafe { &mut *(tray_ptr as *mut TrayIcon) }
+}
+
+fn tray_to_ptr(tray: TrayIcon) -> *mut c_void {
+    Box::into_raw(Box::new(tray)) as *mut c_void
 }
 //#endregion
 
 #[unsafe(no_mangle)]
 pub extern "C" fn rod_event_loop_create() -> *mut c_void {
-    let event_loop: EventLoop<()> = EventLoopBuilder::new().build();
+    let event_loop = EventLoopBuilder::<CustomEvent>::with_user_event().build();
+
+    let proxy = event_loop.create_proxy();
+    TrayIconEvent::set_event_handler(Some(move |event| {
+        proxy.send_event(CustomEvent::TrayIconEvent(event)).ok();
+    }));
+
     return event_loop_to_ptr(event_loop);
 }
 
@@ -106,7 +144,8 @@ pub unsafe extern "C" fn rod_event_loop_poll(
     event_loop_ptr: *mut c_void,
     callback: extern "C" fn(event: *const c_char, data: *const c_char),
 ) {
-    let event_loop = event_loop_from_ptr(event_loop_ptr);
+    let event_loop: &mut EventLoop<CustomEvent> =
+        unsafe { &mut *(event_loop_ptr as *mut EventLoop<CustomEvent>) };
 
     fn call_callback(
         callback: extern "C" fn(event: *const c_char, data: *const c_char),
@@ -119,80 +158,98 @@ pub unsafe extern "C" fn rod_event_loop_poll(
         callback(event_c.as_ptr(), data_c.as_ptr());
     }
 
-    event_loop.run_return(|event, _, control_flow| {
-        *control_flow = ControlFlow::Wait;
+    event_loop.run_return(
+        |event: Event<CustomEvent>,
+         _: &tao::event_loop::EventLoopWindowTarget<CustomEvent>,
+         control_flow: &mut ControlFlow| {
+            *control_flow = ControlFlow::Wait;
 
-        match &event {
-            Event::WindowEvent {
-                window_id,
-                event: WindowEvent::CloseRequested,
-                ..
-            } => {
-                let custom_id = get_custom_window_id(window_id);
-                call_callback(
-                    callback,
-                    "window_close_requested",
-                    &json!({ "id": custom_id }),
-                );
+            match event {
+                Event::WindowEvent {
+                    window_id,
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => {
+                    let custom_id = get_custom_window_id(&window_id);
+                    call_callback(
+                        callback,
+                        "window_close_requested",
+                        &json!({ "id": custom_id }),
+                    );
+                }
+
+                Event::WindowEvent {
+                    window_id,
+                    event: WindowEvent::Focused(state),
+                    ..
+                } => {
+                    let custom_id = get_custom_window_id(&window_id);
+                    call_callback(
+                        callback,
+                        "window_focused",
+                        &json!({
+                            "id": custom_id,
+                            "focused": state
+                        }),
+                    );
+                }
+
+                Event::WindowEvent {
+                    window_id,
+                    event: WindowEvent::Moved(position),
+                    ..
+                } => {
+                    let custom_id = get_custom_window_id(&window_id);
+
+                    call_callback(
+                        callback,
+                        "window_moved",
+                        &json!({
+                            "id": custom_id,
+                            "x": position.x,
+                            "y": position.y
+                        }),
+                    );
+                }
+
+                Event::WindowEvent {
+                    window_id,
+                    event: WindowEvent::Resized(size),
+                    ..
+                } => {
+                    let custom_id = get_custom_window_id(&window_id);
+                    call_callback(
+                        callback,
+                        "window_resized",
+                        &json!({
+                            "id": custom_id,
+                            "width": size.width,
+                            "height": size.height
+                        }),
+                    );
+                }
+
+                Event::UserEvent(CustomEvent::TrayIconEvent(tray_event)) => match tray_event {
+                    TrayIconEvent::Click {
+                        button_state: MouseButtonState::Up,
+                        ..
+                    } => {
+                        call_callback(
+                            callback,
+                            "tray_clicked",
+                            &json!({ "id": tray_event.id().0.parse().unwrap_or(0) }),
+                        );
+                    }
+                    _ => (),
+                },
+
+                Event::MainEventsCleared => {
+                    *control_flow = ControlFlow::Exit;
+                }
+                _ => (),
             }
-
-            Event::WindowEvent {
-                window_id,
-                event: WindowEvent::Focused(state),
-                ..
-            } => {
-                let custom_id = get_custom_window_id(window_id);
-                call_callback(
-                    callback,
-                    "window_focused",
-                    &json!({
-                        "id": custom_id,
-                        "focused": state
-                    }),
-                );
-            }
-
-            Event::WindowEvent {
-                window_id,
-                event: WindowEvent::Moved(position),
-                ..
-            } => {
-                let custom_id = get_custom_window_id(window_id);
-
-                call_callback(
-                    callback,
-                    "window_moved",
-                    &json!({
-                        "id": custom_id,
-                        "x": position.x,
-                        "y": position.y
-                    }),
-                );
-            }
-
-            Event::WindowEvent {
-                window_id,
-                event: WindowEvent::Resized(size),
-                ..
-            } => {
-                let custom_id = get_custom_window_id(window_id);
-                call_callback(
-                    callback,
-                    "window_resized",
-                    &json!({
-                        "id": custom_id,
-                        "width": size.width,
-                        "height": size.height
-                    }),
-                );
-            }
-
-            Event::MainEventsCleared => {
-                *control_flow = ControlFlow::Exit;
-            }
-            _ => (),
-        }
-    });
+        },
+    );
 }
 
 #[unsafe(no_mangle)]
@@ -690,7 +747,7 @@ pub unsafe extern "C" fn rod_webview_create(
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn rod_webview_destroy(webview_ptr: *mut c_void) {
     unsafe {
-        drop(Box::from_raw(webview_ptr as *mut wry::WebView));
+        drop(Box::from_raw(webview_ptr as *mut WebView));
     }
 }
 
@@ -752,4 +809,43 @@ pub unsafe extern "C" fn rod_webview_set_html(webview_ptr: *mut c_void, html_ptr
 pub unsafe extern "C" fn rod_webview_clear_all_browsing_data(webview_ptr: *mut c_void) {
     let webview = webview_from_ptr(webview_ptr);
     let _ = webview.clear_all_browsing_data();
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rod_tray_create(
+    tray_id: u16,
+    options_str_ptr: *mut c_void,
+) -> *mut c_void {
+    let options_str = string_from_ptr(options_str_ptr);
+    let options: Value = serde_json::from_str(&options_str).unwrap();
+
+    let mut builder = TrayIconBuilder::new();
+
+    let menu = Menu::new();
+    builder = builder.with_menu(Box::new(menu));
+    builder = builder.with_id(tray_id.to_string());
+
+    if options["icon_path"].is_string() {
+        let icon_path = options["icon_path"].as_str().unwrap();
+        let icon = load_tray_icon(std::path::Path::new(icon_path));
+        builder = builder.with_icon(icon);
+    }
+
+    if options["tooltip"].is_string() {
+        builder = builder.with_tooltip(options["tooltip"].as_str().unwrap());
+    }
+
+    if options["title"].is_string() {
+        builder = builder.with_title(options["title"].as_str().unwrap());
+    }
+
+    let tray = builder.build().unwrap();
+    return tray_to_ptr(tray);
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn rod_tray_destroy(tray_ptr: *mut c_void) {
+    unsafe {
+        drop(Box::from_raw(tray_ptr as *mut TrayIcon));
+    }
 }

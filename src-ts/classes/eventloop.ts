@@ -12,6 +12,7 @@ interface EventLoopEvents {
 	window_focused: (id: number, focused: boolean) => void;
 	window_moved: (id: number, position: Position) => void;
 	window_resized: (id: number, size: Size) => void;
+	tray_clicked: (id: number) => void;
 }
 
 export default class EventLoop extends TypedEmitter<EventLoopEvents> {
@@ -47,7 +48,11 @@ export default class EventLoop extends TypedEmitter<EventLoopEvents> {
 							width: data.width,
 							height: data.height,
 						});
+					case "tray_clicked":
+						return this.emit("tray_clicked", data.id);
 				}
+
+				throw new Error(`Unknown event type: ${event}`);
 			},
 			{
 				args: [FFIType.cstring, FFIType.cstring],

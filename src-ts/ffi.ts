@@ -87,6 +87,10 @@ const {
 		rod_webview_close_devtools,
 		rod_webview_reload,
 		rod_webview_clear_all_browsing_data,
+
+		// tray
+		rod_tray_create,
+		rod_tray_destroy,
 	},
 } = dlopen(library.default, {
 	// event loop
@@ -318,6 +322,16 @@ const {
 		args: [FFIType.ptr],
 		returns: FFIType.void,
 	},
+
+	// tray
+	rod_tray_create: {
+		args: [FFIType.u16, FFIType.cstring],
+		returns: FFIType.ptr,
+	},
+	rod_tray_destroy: {
+		args: [FFIType.ptr],
+		returns: FFIType.void,
+	},
 });
 
 export {
@@ -386,4 +400,7 @@ export {
 	rod_webview_close_devtools,
 	rod_webview_reload,
 	rod_webview_clear_all_browsing_data,
+	// tray
+	rod_tray_create,
+	rod_tray_destroy,
 };

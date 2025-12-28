@@ -5,17 +5,17 @@ import { encodeString } from "../utilities/strings";
 
 export default class WebContext {
 	readonly path: string;
-	readonly ptr: Pointer;
+	readonly webcontextPtr: Pointer;
 
 	constructor(path: string) {
 		this.path = resolve(path);
 
-		const ptr = rod_webcontext_create(encodeString(this.path));
-		if (!ptr) throw new Error("Failed to create WebContext");
-		this.ptr = ptr;
+		const webcontextPtr = rod_webcontext_create(encodeString(this.path));
+		if (!webcontextPtr) throw new Error("Failed to create WebContext");
+		this.webcontextPtr = webcontextPtr;
 	}
 
 	destroy() {
-		rod_webcontext_destroy(this.ptr);
+		rod_webcontext_destroy(this.webcontextPtr);
 	}
 }

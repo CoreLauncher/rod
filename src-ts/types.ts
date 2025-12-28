@@ -33,6 +33,12 @@ export type WindowOptions = {
 	visibleOnAllWorkspaces?: boolean;
 };
 
+export type TrayOptions = {
+	iconPath?: string;
+	tooltip?: string;
+	title?: string;
+};
+
 export type Size = {
 	width: number;
 	height: number;

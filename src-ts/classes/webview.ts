@@ -33,7 +33,7 @@ export default class WebView extends Window {
 
 		const webviewPtr = rod_webview_create(
 			this.windowPtr,
-			this.webcontext.ptr,
+			this.webcontext.webcontextPtr,
 			encodeString(JSON.stringify(transformWebViewOptions(options))),
 		);
 		if (!webviewPtr) throw new Error("Failed to create WebView");
