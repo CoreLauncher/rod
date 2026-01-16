@@ -1,11 +1,9 @@
-name: Compile Library
+name: Publish to NPM
 
 on:
-    workflow_dispatch:
     push:
-        branches: ["main"]
-    pull_request:
-        branches: ["main"]
+        tags:
+            - 'v*'
 
 env:
     CARGO_TERM_COLOR: always
@@ -51,3 +49,33 @@ jobs:
               with:
                   name: linux-binary
                   path: target/release/librod.so
+
+    publish:
+        runs-on: ubuntu-latest
+        needs: [build-windows, build-linux]
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Download Windows artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: windows-binary
+                  path: target/release/
+
+            - name: Download Linux artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: linux-binary
+                  path: target/release/
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Publish to NPM
+              run: bun publish --access public
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
