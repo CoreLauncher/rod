@@ -72,13 +72,10 @@ jobs:
                   name: linux-binary
                   path: target/release/
 
-            - name: Setup Node for NPM
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '20'
-                  registry-url: 'https://registry.npmjs.org'
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
 
             - name: Publish to NPM
-              run: npm publish --access public
+              run: bun publish --access public
               env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
