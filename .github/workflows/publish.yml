@@ -22,7 +22,7 @@ jobs:
               run: cargo build --release --verbose
 
             - name: Upload artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               with:
                   name: windows-binary
                   path: target/release/rod.dll
@@ -45,7 +45,7 @@ jobs:
               run: cargo build --release --verbose
 
             - name: Upload artifact
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v6
               with:
                   name: linux-binary
                   path: target/release/librod.so
@@ -61,13 +61,13 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Download Windows artifact
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v6
               with:
                   name: windows-binary
                   path: target/release/
 
             - name: Download Linux artifact
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@v6
               with:
                   name: linux-binary
                   path: target/release/
