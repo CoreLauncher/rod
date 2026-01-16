@@ -75,7 +75,8 @@ jobs:
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
 
+            - name: Configure NPM authentication
+              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
             - name: Publish to NPM
               run: bun publish --access public
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
