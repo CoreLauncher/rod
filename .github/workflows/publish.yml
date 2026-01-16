@@ -72,9 +72,6 @@ jobs:
                   name: linux-binary
                   path: target/release/
 
-            - name: Setup Bun
-              uses: oven-sh/setup-bun@v2
-
             - name: Setup Node for NPM
               uses: actions/setup-node@v4
               with:
