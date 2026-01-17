@@ -6,6 +6,8 @@ if (process.env.WEBVIEW_PATH) {
 	library = { default: join(".", process.env.WEBVIEW_PATH) };
 } else if (process.platform === "win32") {
 	library = await import("../target/release/rod.dll");
+} else if (process.platform === "linux") {
+	library = await import("../target/release/librod.so");
 } else {
 	throw new Error("Unsupported platform");
 }

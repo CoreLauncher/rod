@@ -23,7 +23,8 @@
 		"LICENSE",
 		"README.md",
 		"/src-ts/*",
-		"/target/release/rod.dll"
+		"/target/release/rod.dll",
+		"/target/release/librod.so"
 	],
 
 	"type": "module",
