@@ -1934,6 +1934,7 @@ dependencies = [
 name = "rod"
 version = "0.1.0"
 dependencies = [
+ "gtk",
  "image",
  "serde_json",
  "tao",

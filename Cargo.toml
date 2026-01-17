@@ -13,3 +13,6 @@ tao = "0.34.5"
 tray-icon = "0.21.2"
 wry = { version = "0.53.5", features=["devtools"] }
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "ico", "webp"] }
+
+#[cfg(target_os = "linux")]
+gtk = "0.18.2"
