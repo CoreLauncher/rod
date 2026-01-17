@@ -79,8 +79,8 @@ fn string_to_ptr(string: &str) -> CString {
     return CString::new(string).unwrap();
 }
 
-fn event_loop_from_ptr(event_loop_ptr: *mut c_void) -> &'static mut EventLoop<()> {
-    unsafe { &mut *(event_loop_ptr as *mut EventLoop<()>) }
+fn event_loop_from_ptr(event_loop_ptr: *mut c_void) -> &'static mut EventLoop<CustomEvent> {
+    unsafe { &mut *(event_loop_ptr as *mut EventLoop<CustomEvent>) }
 }
 
 fn event_loop_to_ptr(event_loop: EventLoop<CustomEvent>) -> *mut c_void {
@@ -740,7 +740,16 @@ pub unsafe extern "C" fn rod_webview_create(
         builder = builder.with_transparent(options["transparent"].as_bool().unwrap());
     }
 
+    #[cfg(target_os = "windows")]
     let webview = builder.build(window).unwrap();
+    #[cfg(target_os = "linux")]
+    let webview = {
+        use tao::platform::unix::WindowExtUnix;
+        use wry::WebViewBuilderExtUnix;
+        let vbox = window.default_vbox().unwrap();
+        builder.build_gtk(vbox).unwrap()
+    };
+
     return webview_to_ptr(webview);
 }
 
