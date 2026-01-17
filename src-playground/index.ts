@@ -10,6 +10,10 @@ const webview = rod.createWebView({
 		width: 600,
 		height: 300,
 	},
+	minimumSize: {
+		width: 1200,
+		height: 800,
+	},
 });
 
 const tray = rod.createTray({ iconPath: "./icon.ico", title: "hi" });
