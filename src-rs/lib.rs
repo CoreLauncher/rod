@@ -111,9 +111,9 @@ fn webview_to_ptr(webview: WebView) -> *mut c_void {
     Box::into_raw(Box::new(webview)) as *mut c_void
 }
 
-fn tray_from_ptr(tray_ptr: *mut c_void) -> &'static mut TrayIcon {
-    unsafe { &mut *(tray_ptr as *mut TrayIcon) }
-}
+// fn tray_from_ptr(tray_ptr: *mut c_void) -> &'static mut TrayIcon {
+//     unsafe { &mut *(tray_ptr as *mut TrayIcon) }
+// }
 
 fn tray_to_ptr(tray: TrayIcon) -> *mut c_void {
     Box::into_raw(Box::new(tray)) as *mut c_void
