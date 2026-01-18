@@ -2,7 +2,6 @@
 	"name": "@corelauncher/rod",
 	"version": "1.1.1",
 	"description": "Webview for bun based on tauri's tao and wry.",
-
 	"keywords": [
 		"corelauncher",
 		"webview",
@@ -11,14 +10,12 @@
 		"tao",
 		"wry"
 	],
-
 	"homepage": "https://github.com/CoreLauncher/rod#readme",
 	"bugs": {
 		"url": "https://github.com/CoreLauncher/rod/issues"
 	},
 	"license": "MIT",
 	"author": "CoreByte",
-
 	"files": [
 		"LICENSE",
 		"README.md",
@@ -26,11 +23,9 @@
 		"/target/release/rod.dll",
 		"/target/release/librod.so"
 	],
-
 	"type": "module",
 	"main": "./src-ts/index.ts",
 	"module": "./src-ts/index.ts",
-
 	"scripts": {
 		"postinstall": "husky",
 		"prepack": "cargo build --release",
@@ -39,15 +34,14 @@
 		"knip": "bun run knip-bun",
 		"update-version": "bun run ./scripts/update-version.ts"
 	},
-
 	"dependencies": {
 		"tiny-typed-emitter": "^2.1.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.3.10",
-		"@types/bun": "latest",
+		"@biomejs/biome": "2.3.11",
+		"@types/bun": "1.3.6",
 		"husky": "^9.1.7",
 		"typescript": "^5",
-		"knip": "^5.76.3"
+		"knip": "^5.81.0"
 	}
 }
