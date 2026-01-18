@@ -29,6 +29,13 @@ use wry::WebContext;
 use wry::WebView;
 use wry::WebViewBuilder;
 
+fn init_runtime_env() {
+    unsafe {
+        std::env::set_var("GDK_BACKEND", "x11");
+        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+    }
+}
+
 static WINDOW_ID_MAP: LazyLock<Mutex<HashMap<WindowId, u16>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
 
@@ -122,6 +129,7 @@ fn tray_to_ptr(tray: TrayIcon) -> *mut c_void {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn rod_event_loop_create() -> *mut c_void {
+    init_runtime_env();
     let event_loop = EventLoopBuilder::<CustomEvent>::with_user_event().build();
 
     let proxy = event_loop.create_proxy();
