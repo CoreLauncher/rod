@@ -41,7 +41,7 @@ jobs:
             - name: Install dependencies
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y xdotool
+                  sudo apt-get install -y xdotool libgtk-3-dev
 
             - name: Build
               run: cargo build --verbose
