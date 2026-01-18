@@ -55,7 +55,7 @@ jobs:
         needs: [build-windows, build-linux]
         environment: npm_config_token
         permissions:
-            contents: read
+            contents: write
 
         steps:
             - name: Checkout repository
