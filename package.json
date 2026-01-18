@@ -28,7 +28,6 @@
 	"module": "./src-ts/index.ts",
 	"scripts": {
 		"postinstall": "husky",
-		"prepack": "cargo build --release",
 		"dev": "bun run --watch ./src-playground/index.ts",
 		"lint": "bun run biome check --fix",
 		"knip": "bun run knip-bun",
