@@ -36,7 +36,8 @@
 		"prepack": "cargo build --release",
 		"dev": "bun run --watch ./src-playground/index.ts",
 		"lint": "bun run biome check --fix",
-		"knip": "bun run knip-bun"
+		"knip": "bun run knip-bun",
+		"update-version": "bun run ./scripts/update-version.ts"
 	},
 
 	"dependencies": {

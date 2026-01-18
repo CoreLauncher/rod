@@ -76,6 +76,9 @@ jobs:
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
 
+            - name: Update Version
+              run: bun run update-version ${{ github.ref_name }}
+
             - name: Publish to NPM using Bun
               run: bun publish
               env:
